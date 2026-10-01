@@ -1,0 +1,18 @@
+{
+  "archive": "kicad-libary (legacy library-loader export)",
+  "archive_sha256": null,
+  "downloaded": null,
+  "footprint": "SON50P200X200X80-9N",
+  "footprint_original_name": "SON50P200X200X80-9N",
+  "footprint_reused": false,
+  "manufacturer": "Texas Instruments",
+  "model": "SON50P200X200X80-9N.step",
+  "mpn": "INA351ABSIDSGR",
+  "name": "INA351ABSIDSGR",
+  "package_category": null,
+  "part_category": "Integrated Circuit",
+  "part_id": null,
+  "pin_count": null,
+  "source": "componentsearchengine",
+  "symbol_library": "HF_ICs"
+}

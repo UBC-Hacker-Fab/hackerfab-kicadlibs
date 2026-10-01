@@ -1,0 +1,18 @@
+{
+  "archive": "kicad-libary (legacy library-loader export)",
+  "archive_sha256": null,
+  "downloaded": null,
+  "footprint": "INA351ABSIRUGR",
+  "footprint_original_name": "INA351ABSIRUGR",
+  "footprint_reused": false,
+  "manufacturer": "Texas Instruments",
+  "model": "INA351ABSIRUGR.step",
+  "mpn": "INA351ABSIRUGR",
+  "name": "INA351ABSIRUGR",
+  "package_category": null,
+  "part_category": "Integrated Circuit",
+  "part_id": null,
+  "pin_count": null,
+  "source": "componentsearchengine",
+  "symbol_library": "HF_ICs"
+}

@@ -1,0 +1,18 @@
+{
+  "archive": "kicad-libary (legacy library-loader export)",
+  "archive_sha256": null,
+  "downloaded": null,
+  "footprint": "QFP50P1200X1200X160-64N",
+  "footprint_original_name": "QFP50P1200X1200X160-64N",
+  "footprint_reused": false,
+  "manufacturer": "STMicroelectronics",
+  "model": "QFP50P1200X1200X160-64N.step",
+  "mpn": "STM32G071RBT3",
+  "name": "STM32G071RBT3",
+  "package_category": null,
+  "part_category": "Integrated Circuit",
+  "part_id": null,
+  "pin_count": null,
+  "source": "componentsearchengine",
+  "symbol_library": "HF_ICs"
+}

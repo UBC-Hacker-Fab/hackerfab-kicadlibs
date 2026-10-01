@@ -1,0 +1,18 @@
+{
+  "archive": "kicad-libary (legacy library-loader export)",
+  "archive_sha256": null,
+  "downloaded": null,
+  "footprint": "TLV9061IDPWR",
+  "footprint_original_name": "TLV9061IDPWR",
+  "footprint_reused": false,
+  "manufacturer": null,
+  "model": "TLV9061IDPWR.step",
+  "mpn": "TLV9061IDPWR",
+  "name": "TLV9061IDPWR",
+  "package_category": null,
+  "part_category": "Integrated Circuit",
+  "part_id": null,
+  "pin_count": null,
+  "source": "componentsearchengine",
+  "symbol_library": "HF_ICs"
+}

@@ -1,0 +1,40 @@
+{
+  "kicad_major": 10,
+  "path_variable": "HACKERFAB_KICADLIBS",
+  "footprint_library": "HF_Footprints",
+  "max_format_version": {
+    "symbol": 20251024,
+    "footprint": 20260206
+  },
+  "symbol_libraries": {
+    "HF_ICs": "Hackerfab integrated circuits",
+    "HF_Passives": "Hackerfab resistors, capacitors, inductors, ferrites, fuses",
+    "HF_Connectors": "Hackerfab connectors and headers",
+    "HF_Discrete": "Hackerfab diodes, transistors, LEDs",
+    "HF_Misc": "Hackerfab crystals, switches, modules, everything else"
+  },
+  "category_map": {
+    "integrated circuit": "HF_ICs",
+    "microcontroller": "HF_ICs",
+    "capacitor": "HF_Passives",
+    "resistor": "HF_Passives",
+    "inductor": "HF_Passives",
+    "ferrite bead": "HF_Passives",
+    "fuse": "HF_Passives",
+    "connector": "HF_Connectors",
+    "header": "HF_Connectors",
+    "socket": "HF_Connectors",
+    "diode": "HF_Discrete",
+    "led": "HF_Discrete",
+    "transistor": "HF_Discrete",
+    "mosfet": "HF_Discrete",
+    "crystal": "HF_Misc",
+    "oscillator": "HF_Misc",
+    "switch": "HF_Misc"
+  },
+  "required_fields": ["Reference", "Value", "Footprint"],
+  "recommended_fields": ["Datasheet", "Description", "Manufacturer_Name", "Manufacturer_Part_Number"],
+  "drop_field_patterns": ["Price/Stock$"],
+  "download_dirs": ["~/Downloads"],
+  "download_max_age_days": 30
+}

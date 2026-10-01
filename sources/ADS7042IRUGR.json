@@ -1,0 +1,18 @@
+{
+  "archive": "kicad-libary (legacy library-loader export)",
+  "archive_sha256": null,
+  "downloaded": null,
+  "footprint": "ADS7042IRUGR",
+  "footprint_original_name": "ADS7042IRUGR",
+  "footprint_reused": false,
+  "manufacturer": "Texas Instruments",
+  "model": "ADS7042IRUGR.step",
+  "mpn": "ADS7042IRUGR",
+  "name": "ADS7042IRUGR",
+  "package_category": null,
+  "part_category": "Integrated Circuit",
+  "part_id": null,
+  "pin_count": null,
+  "source": "componentsearchengine",
+  "symbol_library": "HF_ICs"
+}
