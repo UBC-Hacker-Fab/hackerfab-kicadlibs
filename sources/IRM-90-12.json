@@ -1,0 +1,19 @@
+{
+  "archive": "IRM-90-12.zip",
+  "archive_sha256": "92e58a0f3e6de07e8f798f2b26dac8aaa6252d94468dc41647a7ca8109c6f0ea",
+  "downloaded": null,
+  "footprint": "CONV_IRM-90-12",
+  "footprint_original_name": "CONV_IRM-90-12",
+  "footprint_reused": false,
+  "manufacturer": "MEAN WELL USA Inc.",
+  "model": null,
+  "mpn": "IRM-90-12",
+  "name": "IRM-90-12",
+  "package_category": null,
+  "part_category": null,
+  "part_id": "5137868",
+  "pin_count": null,
+  "source": "snapeda",
+  "source_url": "https://www.snapeda.com/parts/IRM-90-12/Mean+Well/view-part/?ref=snap",
+  "symbol_library": "HF_Misc"
+}

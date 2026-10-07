@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import hflib  # noqa: E402
+import ingest  # noqa: E402
 
 SYMBOL = (
     '(symbol "X1"\n'
@@ -74,6 +75,32 @@ class LibraryTests(unittest.TestCase):
 
     def test_rename_footprint(self):
         self.assertEqual(hflib.fp_name(hflib.rename_fp(FOOTPRINT, "FP_X")), "FP_X")
+
+
+class SnapEdaTests(unittest.TestCase):
+    TEXT = (
+        '(symbol "P1"\n'
+        '\t\t(property "MF" "ACME"\n\t\t\t(at 0 0 0)\n\t\t)\n'
+        '\t\t(property "MP" "P1"\n\t\t\t(at 0 0 0)\n\t\t)\n'
+        '\t\t(property "Package" "None"\n\t\t\t(at 0 0 0)\n\t\t)\n'
+        '\t\t(property "Purchase-URL" "https://x/?unipart_id=42&a=b"\n\t\t\t(at 0 0 0)\n\t\t)\n'
+        '\t\t(property "SnapEDA_Link" "https://snapeda.com/p"\n\t\t\t(at 0 0 0)\n\t\t)\n'
+        "\t)"
+    )
+
+    def test_field_mapping(self):
+        text, meta = ingest.adapt_snapeda(self.TEXT)
+        self.assertEqual(hflib.get_prop(text, "Manufacturer_Name"), "ACME")
+        self.assertEqual(hflib.get_prop(text, "Manufacturer_Part_Number"), "P1")
+        for gone in ("MF", "MP", "Package"):
+            self.assertIsNone(hflib.get_prop(text, gone))
+        self.assertEqual(meta["PartID"], "42")
+        self.assertEqual(meta["SourceURL"], "https://snapeda.com/p")
+
+    def test_newline_escaping_roundtrip(self):
+        t = hflib.set_prop(self.TEXT, "Description", "a\nb")
+        self.assertIn('"a\\nb"', t)
+        self.assertEqual(hflib.get_prop(t, "Description"), "a\nb")
 
 
 if __name__ == "__main__":

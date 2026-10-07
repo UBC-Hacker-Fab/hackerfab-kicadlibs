@@ -1,7 +1,8 @@
 # Hackerfab KiCad libraries
 
 Shared KiCad **10** symbols, footprints and 3D models for all Hackerfab projects.
-Parts come from [Component Search Engine](https://componentsearchengine.com/) downloads and are
+Parts come from [Component Search Engine](https://componentsearchengine.com/) or
+[SnapEDA](https://www.snapeda.com/) KiCad downloads and are
 added with a script (or the `/add-parts` Claude skill) so every part looks the same and is checked
 before it lands.
 
@@ -23,7 +24,7 @@ If you use Claude Code, run `claude` in this folder and ask for `/setup-libs`.
 
 ## Add parts
 
-1. Download the part's **KiCad** model zip from Component Search Engine (it lands in `~/Downloads`).
+1. Download the part's **KiCad** zip from Component Search Engine or SnapEDA (it lands in `~/Downloads`).
 2. On a branch named after you (`yourname/add-<part>`), run either:
    - Claude Code in this folder: `/add-parts`
    - or `python3 scripts/ingest.py` (add `--dry-run` first to preview)
@@ -38,7 +39,8 @@ What the ingest does for each part:
 | 3D model `(model Part.stp` (relative path) | copy the STEP in, point at `${HACKERFAB_KICADLIBS}/3dmodels/...` |
 | generic footprint name reused by another part | reuse it if the pads are identical, otherwise add `<name>_<MPN>` |
 | symbol pins vs footprint pads | must match, or the part is rejected |
-| Mouser/Arrow price-stock URL fields | dropped (they go stale) |
+| vendor price/stock/purchase link fields | dropped (they go stale) |
+| SnapEDA field names (`MF`, `MP`) | mapped to `Manufacturer_Name` / `Manufacturer_Part_Number` |
 | ~65 files for other EDA tools | ignored |
 
 ## Layout
@@ -73,7 +75,8 @@ the limits in `hf-libs.json`. When the team moves to a newer KiCad, update `hf-l
 
 ## Not covered yet
 
-- Parts from SnapMagic/SnapEDA or Ultra Librarian: the zip layouts differ; add a loader in
-  `scripts/ingest.py` when someone needs one.
+- Ultra Librarian zips: the layout differs; add a loader in `scripts/ingest.py` when someone needs one.
+- SnapEDA zips carry no category, datasheet or 3D model in many cases: you will be asked which library
+  to use, and the validator will warn about the missing fields.
 - 3D models are ~1 MB each, so the repo will grow. Consider Git LFS later if it gets heavy.
 - No license file yet.

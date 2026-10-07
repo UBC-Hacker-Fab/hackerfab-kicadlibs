@@ -58,11 +58,11 @@ _PROP = re.compile(r"\(property " + _STR + " " + _STR)
 
 
 def esc(value):
-    return value.replace("\\", "\\\\").replace('"', '\\"')
+    return value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
 
 def unesc(value):
-    return re.sub(r"\\(.)", r"\1", value)
+    return re.sub(r"\\(.)", lambda m: "\n" if m.group(1) == "n" else m.group(1), value)
 
 
 def children(text):

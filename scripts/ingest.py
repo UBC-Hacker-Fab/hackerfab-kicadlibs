@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Add Component Search Engine (SamacSys) part downloads to the shared libraries.
+"""Add Component Search Engine (SamacSys) and SnapEDA part downloads to the shared libraries.
 
     python3 scripts/ingest.py                  # scan ~/Downloads for new part zips
     python3 scripts/ingest.py PART.zip DIR     # ingest specific zips / extracted folders
@@ -65,10 +65,18 @@ def zip_part_prefixes(zf):
     return out
 
 
+def is_flat_kicad_zip(zf):
+    """SnapEDA-style zip: one .kicad_sym and at least one .kicad_mod, and not a KiCad project."""
+    names = [n.lower() for n in zf.namelist()]
+    return (sum(n.endswith(".kicad_sym") for n in names) == 1
+            and any(n.endswith(".kicad_mod") for n in names)
+            and not any(n.endswith((".kicad_pcb", ".kicad_sch", ".kicad_pro")) for n in names))
+
+
 def is_part_zip(path):
     try:
         with zipfile.ZipFile(path) as zf:
-            return bool(zip_part_prefixes(zf))
+            return bool(zip_part_prefixes(zf)) or is_flat_kicad_zip(zf)
     except (zipfile.BadZipFile, OSError):
         return False
 
@@ -127,6 +135,7 @@ def build_parts(cli, sym_src, mods, steps, meta, origin, sha, tmp):
 
 def load_cse_root(cli, root, tmp, origin, sha):
     meta = parse_info(root / "part_info.txt")
+    meta["Source"] = "componentsearchengine"
     kdir = next((d for d in root.iterdir() if d.is_dir() and d.name.lower() == "kicad"), None)
     if kdir is None:
         raise HFError("%s: no KiCad folder in the download" % origin)
@@ -143,6 +152,48 @@ def load_cse_root(cli, root, tmp, origin, sha):
     return build_parts(cli, sym_src, mods, steps, meta, origin, sha, tmp)
 
 
+_SNAPEDA_RENAME = {"MF": "Manufacturer_Name", "MANUFACTURER": "Manufacturer_Name", "MP": "Manufacturer_Part_Number"}
+
+
+def adapt_snapeda(text):
+    """Map SnapEDA's field names onto ours; returns (symbol text, extra metadata)."""
+    meta = {}
+    for old, new in _SNAPEDA_RENAME.items():
+        v = hflib.get_prop(text, old)
+        if v:
+            if not hflib.get_prop(text, new):
+                text = hflib.set_prop(text, new, v)
+            meta.setdefault(new, v)
+        text = hflib.remove_prop(text, old)
+    link = hflib.get_prop(text, "SnapEDA_Link")
+    if link:
+        meta["SourceURL"] = link
+    m = re.search(r"unipart_id=(\d+)", hflib.get_prop(text, "Purchase-URL") or "")
+    if m:
+        meta["PartID"] = m.group(1)
+    for name, value, _, _ in hflib.props(text):
+        if value == "None":
+            text = hflib.remove_prop(text, name)
+    return text, meta
+
+
+def load_flat_dir(cli, root, tmp, origin, sha):
+    syms = sorted(root.rglob("*.kicad_sym"))
+    if len(syms) != 1:
+        raise HFError("%s: expected one .kicad_sym, found %d" % (origin, len(syms)))
+    mods = sorted(root.rglob("*.kicad_mod"))
+    steps = sorted(p for p in root.rglob("*") if p.suffix.lower() in (".stp", ".step"))
+    vendor = "snapeda" if "snapeda" in syms[0].read_text(encoding="utf-8", errors="replace").lower() else "unknown"
+    parts = build_parts(cli, syms[0], mods, steps, {"Source": vendor}, origin, sha, tmp)
+    for p in parts:
+        if vendor == "snapeda":
+            p.sym_text, extra = adapt_snapeda(p.sym_text)
+            p.meta.update(extra)
+        p.meta["PartNumber"] = hflib.get_prop(p.sym_text, "Manufacturer_Part_Number") or p.name
+        p.meta["Manufacturer"] = hflib.get_prop(p.sym_text, "Manufacturer_Name")
+    return parts
+
+
 def load_source(cli, src, work):
     """Yield Part lists for one zip or folder. Raises HFError if it is not a part package."""
     parts = []
@@ -150,7 +201,9 @@ def load_source(cli, src, work):
         roots = [p.parent for p in src.rglob("part_info.txt") if any(
             d.is_dir() and d.name.lower() == "kicad" for d in p.parent.iterdir())]
         if not roots:
-            raise HFError("%s: not a Component Search Engine part folder (no part_info.txt + KiCad/)" % src.name)
+            if any(src.rglob("*.kicad_sym")) and any(src.rglob("*.kicad_mod")):
+                return load_flat_dir(cli, src, work, src.name, None)
+            raise HFError("%s: not a part folder (no part_info.txt + KiCad/, and no .kicad_sym + .kicad_mod)" % src.name)
         for i, root in enumerate(roots):
             tmp = work / ("d%d" % i)
             tmp.mkdir()
@@ -161,9 +214,16 @@ def load_source(cli, src, work):
     sha = sha256(src)
     with zipfile.ZipFile(src) as zf:
         prefixes = zip_part_prefixes(zf)
+        if not prefixes and is_flat_kicad_zip(zf):
+            tmp = work / "flat"
+            tmp.mkdir()
+            for n in zf.namelist():
+                if n.lower().endswith((".kicad_sym", ".kicad_mod", ".stp", ".step")):
+                    zf.extract(n, tmp)
+            return load_flat_dir(cli, tmp, tmp, src.name, sha)
         if not prefixes:
-            raise HFError("%s: not a part package (no part_info.txt + KiCad/ folder; "
-                          ".epw loader files can't be used)" % src.name)
+            raise HFError("%s: not a usable part package (need a Component Search Engine zip with KiCad/, "
+                          "or a SnapEDA KiCad zip; .epw loader files can't be used)" % src.name)
         for i, prefix in enumerate(prefixes):
             tmp = work / ("z%d" % i)
             tmp.mkdir()
@@ -204,6 +264,8 @@ def discover(paths, cfg, since_days):
 def normalize_symbol(text, final_fp, cfg):
     text = hflib.set_prop(text, "Footprint", "%s:%s" % (cfg["footprint_library"], final_fp))
     desc, extra = hflib.get_prop(text, "Description"), hflib.get_prop(text, "Description_1")
+    if desc and re.search(r"\s{2,}|^\s|\s$", desc):
+        text = hflib.set_prop(text, "Description", re.sub(r"\s+", " ", desc).strip())
     if extra is not None:
         if not desc:
             text = hflib.set_prop(text, "Description", extra)
@@ -322,7 +384,7 @@ def place(part, ctx):
     if not reuse:
         if hflib.get_prop(fp_text, "Value") == name0:
             fp_text = hflib.set_prop(fp_text, "Value", final, indent="\t")
-        if final != name0:
+        if hflib.fp_name(fp_text) != final:
             fp_text = hflib.rename_fp(fp_text, final)
         if part.step is not None:
             model_name = final + ".step"
@@ -358,7 +420,8 @@ def place(part, ctx):
         "name": part.name,
         "manufacturer": part.meta.get("Manufacturer"),
         "mpn": part.meta.get("PartNumber"),
-        "source": "componentsearchengine",
+        "source": part.meta.get("Source", "componentsearchengine"),
+        "source_url": part.meta.get("SourceURL"),
         "part_id": part.meta.get("PartID"),
         "part_category": part.meta.get("PartCategory"),
         "package_category": part.meta.get("PackageCategory"),
@@ -372,6 +435,7 @@ def place(part, ctx):
         "archive": part.origin,
         "archive_sha256": part.sha,
     }
+    src = {k: v for k, v in src.items() if k != "source_url" or v}
     hflib.sources_dir().mkdir(exist_ok=True)
     sf.write_text(json.dumps(src, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     res["status"] = "replaced" if old_lib else "added"

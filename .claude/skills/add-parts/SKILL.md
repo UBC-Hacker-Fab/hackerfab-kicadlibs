@@ -1,6 +1,6 @@
 ---
 name: add-parts
-description: Add newly downloaded Component Search Engine (SamacSys) parts to the Hackerfab KiCad libraries. Use when the user says they downloaded parts, wants to add a symbol/footprint/3D model to the shared library, or runs /add-parts. Scans their Downloads folder, converts and checks the parts, updates the libraries, and prepares a branch and PR.
+description: Add newly downloaded Component Search Engine (SamacSys) or SnapEDA KiCad parts to the Hackerfab KiCad libraries. Use when the user says they downloaded parts, wants to add a symbol/footprint/3D model to the shared library, or runs /add-parts. Scans their Downloads folder, converts and checks the parts, updates the libraries, and prepares a branch and PR.
 ---
 
 # Add downloaded parts to the shared library
@@ -38,8 +38,8 @@ Read the JSON `results` (each has `part`, `status`, `library`, `footprint`, `foo
 |---|---|
 | `would_add` | fine |
 | `exists` | already in the library; skip it. Only use `--replace` if the user says they want to overwrite it. |
-| `needs_category` | the part's category is not in `hf-libs.json`. Ask the user which library from `choices` (use AskUserQuestion), then pass `--assign PART=LIBRARY`. If this category will come up again, offer to add it to `category_map` in `hf-libs.json`. |
-| `skipped` | not a usable part package (for example an `.epw` loader file). Tell the user how to download the right one: on componentsearchengine.com, download the part's **KiCad** model zip. |
+| `needs_category` | the part's category is not in `hf-libs.json` (SnapEDA downloads never carry one). Ask the user which library from `choices` (use AskUserQuestion), then pass `--assign PART=LIBRARY`. If this category will come up again, offer to add it to `category_map` in `hf-libs.json`. |
+| `skipped` | not a usable part package (for example an `.epw` loader file). Tell the user how to download the right one: on componentsearchengine.com or snapeda.com, download the part's **KiCad** zip. |
 | `error` | do not add it. Explain in plain words. Pin/pad mismatch usually means the symbol and footprint in the download don't belong together - suggest re-downloading, and only use `--force` if the user insists. |
 
 If `fatal` is present (for example "pinned to KiCad 10"), relay it: members must have **KiCad 10**
